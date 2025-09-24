@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>웹툰 서사 분석 강의</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 사이드바 메뉴 */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-280px);
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.3em;
+            color: #2c3e50;
+            line-height: 1.3;
+        }
+
+        .menu-group {
+            margin-bottom: 25px;
+        }
+
+        .menu-group-title {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 12px 15px;
+            color: #34495e;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background: #ecf0f1;
+            border-left-color: #3498db;
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: #3498db;
+            color: white;
+            border-left-color: #2980b9;
+        }
+
+        .menu-item.sub-item {
+            padding-left: 25px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .menu-item.sub-item:hover {
+            color: #34495e;
+        }
+
+        /* 메인 콘텐츠 */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* 상단 헤더 */
+        .top-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #34495e;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            background: #ecf0f1;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 4px;
+            background: #ecf0f1;
+            border-radius: 2px;
+            margin: 0 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .lecture-time {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        /* 섹션 스타일 */
+        .section {
+            padding: 40px;
+            min-height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            margin: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section h1 {
+            font-size: 2.8em;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 20px;
+        }
+
+        .section h2 {
+            font-size: 2.2em;
+            color: #34495e;
+            margin: 30px 0 20px 0;
+            border-left: 5px solid #e74c3c;
+            padding-left: 20px;
+        }
+
+        .section h3 {
+            font-size: 1.6em;
+            color: #2980b9;
+            margin: 25px 0 15px 0;
+        }
+
+        .section p, .section li {
+            font-size: 1.1em;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .section ul {
+            padding-left: 30px;
+            margin-bottom: 25px;
+        }
+
+        /* 시간 배분 카드 */
+        .time-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .time-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .time-card h3 {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .time-card .duration {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* 다이어그램 스타일 */
+        .diagram {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 100px solid transparent;
+            border-right: 100px solid transparent;
+            border-bottom: 150px solid #3498db;
+            position: relative;
+            margin: 30px auto;
+        }
+
+        .triangle-text {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .triangle-text.top {
+            top: 120px;
+            left: -50px;
+            width: 100px;
+        }
+
+        .triangle-text.left {
+            top: 160px;
+            left: -120px;
+            width: 80px;
+        }
+
+        .triangle-text.right {
+            top: 160px;
+            left: 40px;
+            width: 80px;
+        }
+
+        .actant-model {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: 1fr 2fr 1fr;
+            gap: 25px;
+            max-width: 700px;
+            margin: 30px auto;
+            text-align: center;
+        }
+
+        .actant-box {
+            background: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            border-radius: 15px;
+            padding: 20px;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .actant-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .actant-box.sender { grid-area: 1 / 1 / 2 / 2; background: #e8f5e8; }
+        .actant-box.object { grid-area: 1 / 2 / 2 / 3; background: #fff2cc; }
+        .actant-box.receiver { grid-area: 1 / 3 / 2 / 4; background: #e8f5e8; }
+        .actant-box.helper { grid-area: 2 / 1 / 3 / 2; background: #e1f5fe; }
+        .actant-box.subject { grid-area: 2 / 2 / 3 / 3; background: #ffebee; }
+        .actant-box.opponent { grid-area: 2 / 3 / 3 / 4; background: #fce4ec; }
+
+        .hero-journey {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .journey-step {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 0.95em;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .journey-step:hover {
+            transform: translateY(-5px);
+        }
+
+        .journey-step:nth-child(4n+1) { background: linear-gradient(45deg, #ff6b6b, #ffa500); }
+        .journey-step:nth-child(4n+2) { background: linear-gradient(45deg, #4ecdc4, #44a08d); }
+        .journey-step:nth-child(4n+3) { background: linear-gradient(45deg, #a8edea, #fed6e3); color: #333; }
+        .journey-step:nth-child(4n) { background: linear-gradient(45deg, #667eea, #764ba2); }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .table th, .table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .table th {
+            background: #34495e;
+            color: white;
+            font-weight: bold;
+        }
+
+        .table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .table tr:hover {
+            background: #e8f4f8;
+            transform: scale(1.01);
+            transition: all 0.3s ease;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 1px solid #ffeeba;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.2);
+        }
+
+        .venn-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+        }
+
+        .venn-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            position: relative;
+            margin: -20px;
+        }
+
+        .venn-circle:nth-child(1) { background: rgba(52, 152, 219, 0.8); z-index: 3; }
+        .venn-circle:nth-child(2) { background: rgba(231, 76, 60, 0.8); z-index: 2; }
+        .venn-circle:nth-child(3) { background: rgba(46, 204, 113, 0.8); z-index: 1; }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-280px);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .section {
+                margin: 10px;
+                padding: 20px;
+            }
+
+            .time-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .actant-model {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(6, 1fr);
+            }
+
+            .actant-box {
+                grid-area: auto !important;
+            }
+        }
+
+        /* 스크롤 애니메이션 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 사이드바 메뉴 -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>웹툰 IP와 콘텐츠<br>서사 분석의 3가지 핵심 렌즈</h1>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-group-title">강의 개요</div>
+                <a href="#overview" class="menu-item active">강의 소개 및 목표</a>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-group-title">Part 1 - 모티프 (30분)</div>
+                <a href="#motif-intro" class="menu-item">이야기의 DNA</a>
+                <a href="#violation" class="menu-item sub-item">위반성의 힘</a>
+                <a href="#tags" class="menu-item sub-item">웹툰 태그 시스템</a>
+                <a href="#motif-table" class="menu-item sub-item">모티프 분석표</a>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-group-title">Part 2 - 캐릭터 (40분)</div>
+                <a href="#character-intro" class="menu-item">이야기의 심장</a>
+                <a href="#actant-model" class="menu-item sub-item">행위자 모델</a>
+                <a href="#actant-example" class="menu-item sub-item">모델 적용 사례</a>
+                <a href="#desire-triangle" class="menu-item sub-item">욕망의 삼각형</a>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-group-title">Part 3 - 플롯 (40분)</div>
+                <a href="#plot-intro" class="menu-item">이야기의 뼈대</a>
+                <a href="#hero-journey" class="menu-item sub-item">영웅의 여정</a>
+                <a href="#journey-example" class="menu-item sub-item">여정 적용 사례</a>
+                <a href="#subplot" class="menu-item sub-item">중심-보조 플롯</a>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-group-title">종합 정리</div>
+                <a href="#checklist" class="menu-item">분석 체크리스트</a>
+                <a href="#conclusion" class="menu-item">종합 정리</a>
+                <a href="#practice" class="menu-item">실습 과제</a>
+            </div>
+        </nav>
+
+        <div class="main-content" id="mainContent">
+            <!-- 상단 헤더 -->
+            <header class="top-header">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="lecture-time">총 2시간 강의</div>
+            </header>
+
+            <!-- 강의 개요 -->
+            <section class="section fade-in" id="overview">
+                <h1>강의 개요 및 학습 목표</h1>
+                
+                <h2>강의 시간 배분</h2>
+                <div class="time-cards">
+                    <div class="time-card">
+                        <h3>Part 1</h3>
+                        <div class="duration">30분</div>
+                        <p>이야기의 DNA - 모티프</p>
+                    </div>
+                    <div class="time-card">
+                        <h3>Part 2</h3>
+                        <div class="duration">40분</div>
+                        <p>이야기의 심장 - 캐릭터</p>
+                    </div>
+                    <div class="time-card">
+                        <h3>Part 3</h3>
+                        <div class="duration">40분</div>
+                        <p>이야기의 뼈대 - 플롯</p>
+                    </div>
+                    <div class="time-card">
+                        <h3>정리</h3>
+                        <div class="duration">30분</div>
+                        <p>종합 정리 및 실습</p>
+                    </div>
+                </div>
+
+                <h2>학습 목표</h2>
+                <div class="highlight">
+                    <ul>
+                        <li>웹툰 서사의 핵심 구성 요소 3가지 이해</li>
+                        <li>모티프, 캐릭터, 플롯 분석 능력 습득</li>
+                        <li>수동적 독자에서 능동적 비평가로 전환</li>
+                        <li>웹툰 IP의 상업적 가치 분석 역량 개발</li>
+                    </ul>
+                </div>
+
+                <h2>왜 서사 분석이 중요한가?</h2>
+                <ul>
+                    <li>웹툰은 단순한 오락이 아닌 정교한 건축술의 결과물</li>
+                    <li>독자의 마음을 사로잡는 '설계도' 존재</li>
+                    <li>IP 비즈니스에서 서사적 완성도가 상업적 성공 좌우</li>
+                </ul>
+            </section>
+
+            <!-- Part 1: 모티프 소개 -->
+            <section class="section fade-in" id="motif-intro">
+                <h1>Part 1: 이야기의 DNA - 모티프</h1>
+                
+                <h2>모티프(Motif)의 정의</h2>
+                <div class="highlight">
+                    <p><strong>모티프:</strong> 이야기 속에서 반복되어 나타나는 동일한 내용적 요소</p>
+                    <p>→ 시대를 초월한 '흥행 공식'이자 이야기의 가장 작은 유전자</p>
+                </div>
+
+                <h3>모티프의 특징</h3>
+                <ul>
+                    <li>시대와 문화, 매체를 넘나드는 보편성</li>
+                    <li>독자에게 익숙한 재미 보장</li>
+                    <li>작가만의 새로운 '양념' 발견 공간 제공</li>
+                </ul>
+
+                <h3>사례 비교</h3>
+                <table class="table">
+                    <tr>
+                        <th>작품</th>
+                        <th>배경</th>
+                        <th>공통 모티프</th>
+                    </tr>
+                    <tr>
+                        <td>타이타닉</td>
+                        <td>1912년 대서양 여객선</td>
+                        <td rowspan="3">신분을 초월한 사랑</td>
+                    </tr>
+                    <tr>
+                        <td>사랑의 불시착</td>
+                        <td>2020년 남북한 비무장지대</td>
+                    </tr>
+                    <tr>
+                        <td>로미오와 줄리엣</td>
+                        <td>중세 이탈리아 베로나</td>
+                    </tr>
+                </table>
+            </section>
+
+            <!-- 위반성 -->
+            <section class="section fade-in" id="violation">
+                <h1>위반성(Violation): 모티프의 진짜 힘</h1>
+                
+                <h2>위반성의 개념</h2>
+                <div class="highlight">
+                    <p><strong>위반성:</strong> 안정된 상태를 뒤흔들고 기존 규칙을 깨뜨리는 힘</p>
+                    <p>"모두가 행복하게 잘 살았습니다"는 이야기의 끝이지, 시작이 될 수 없음</p>
+                </div>
+
+                <h2>웹툰에서의 위반성 전략</h2>
+                <ul>
+                    <li>독자 확보를 위한 첫 화의 충격적 '위반' 배치</li>
+                    <li>1~3화 내 흥미 유발 필수</li>
+                    <li>"대체 무슨 일이 일어난 거지?" → 호기심 유발</li>
+                </ul>
+
+                <h3>현대 웹툰의 위반 사례</h3>
+                <ul>
+                    <li>평범한 학생 앞에 게임 시스템 창 출현</li>
+                    <li>죽은 주인공이 기억을 가진 채 과거로 회귀</li>
+                    <li>현실 세계가 갑자기 게임화</li>
+                </ul>
+
+                <div class="diagram">
+                    <h3>위반성의 작동 구조</h3>
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 30px; margin: 20px 0;">
+                        <div style="background: #3498db; color: white; padding: 15px 20px; border-radius: 10px;">안정 상태</div>
+                        <span style="font-size: 1.5em;">→</span>
+                        <div style="background: #e74c3c; color: white; padding: 15px 20px; border-radius: 10px;">위반 발생</div>
+                        <span style="font-size: 1.5em;">→</span>
+                        <div style="background: #f39c12; color: white; padding: 15px 20px; border-radius: 10px;">호기심 유발</div>
+                        <span style="font-size: 1.5em;">→</span>
+                        <div style="background: #27ae60; color: white; padding: 15px 20px; border-radius: 10px;">다음 화 클릭</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 웹툰 태그 -->
+            <section class="section fade-in" id="tags">
+                <h1>현대적 모티프: 웹툰 태그 시스템</h1>
+                
+                <h2>과거 vs 현재 모티프의 차이</h2>
+                <table class="table">
+                    <tr>
+                        <th>구분</th>
+                        <th>과거 모티프</th>
+                        <th>현재 웹툰 태그</th>
+                    </tr>
+                    <tr>
+                        <td>발견 방식</td>
+                        <td>작품 읽은 후 사후적 분석</td>
+                        <td>작품 선택 전 능동적 선택</td>
+                    </tr>
+                    <tr>
+                        <td>독자 역할</td>
+                        <td>모티프 '발견'</td>
+                        <td>모티프 '선택'</td>
+                    </tr>
+                    <tr>
+                        <td>기능</td>
+                        <td>학문적 분석 대상</td>
+                        <td>상업적 계약서</td>
+                    </tr>
+                </table>
+
+                <h2>태그를 통한 암묵적 계약</h2>
+                <div class="highlight">
+                    <p><strong>예시:</strong> '#회귀' 태그 클릭</p>
+                    <p>→ 독자 기대: "주인공이 미래 지식으로 과거 실수 바로잡고 복수하며 성공하는 모습"</p>
+                    <p>→ 작가 의무: 이 기대를 배신하지 않는 선에서 독창적 스토리 전개</p>
+                </div>
+
+                <h2>주요 웹툰 태그 모티프</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+                    <div style="background: #e74c3c; color: white; padding: 15px; text-align: center; border-radius: 10px;">#회귀</div>
+                    <div style="background: #3498db; color: white; padding: 15px; text-align: center; border-radius: 10px;">#환생</div>
+                    <div style="background: #2ecc71; color: white; padding: 15px; text-align: center; border-radius: 10px;">#빙의</div>
+                    <div style="background: #f39c12; color: white; padding: 15px; text-align: center; border-radius: 10px;">#시스템</div>
+                    <div style="background: #9b59b6; color: white; padding: 15px; text-align: center; border-radius: 10px;">#헌터물</div>
+                    <div style="background: #1abc9c; color: white; padding: 15px; text-align: center; border-radius: 10px;">#책빙의물</div>
+                </div>
+            </section>
+
+            <!-- 모티프 분석표 -->
+            <section class="section fade-in" id="motif-table">
+                <h1>웹툰 핵심 모티프 분석표</h1>
+                
+                <table class="table">
+                    <tr>
+                        <th>모티프</th>
+                        <th>설명</th>
+                        <th>고전 사례</th>
+                        <th>웹툰 사례</th>
+                    </tr>
+                    <tr>
+                        <td><strong>신분 위장</strong></td>
+                        <td>진짜 신분을 숨기고 다른 사람 행세</td>
+                        <td>광해</td>
+                        <td>화산귀환, 입학용병</td>
+                    </tr>
+                    <tr>
+                        <td><strong>운명에 대한 반역</strong></td>
+                        <td>주어진 운명이나 불행에 맞서 싸움</td>
+                        <td>프로메테우스</td>
+                        <td>나 혼자만 레벨업</td>
+                    </tr>
+                    <tr>
+                        <td><strong>강제된 과업</strong></td>
+                        <td>원치 않는 임무나 상황에 내몰림</td>
+                        <td>쉰들러 리스트</td>
+                        <td>전지적 독자 시점</td>
+                    </tr>
+                    <tr>
+                        <td><strong>우월한 하급자</strong></td>
+                        <td>낮은 신분에도 뛰어난 능력 보유</td>
+                        <td>장화 신은 고양이</td>
+                        <td>김부장, 의원 다시 살다</td>
+                    </tr>
+                    <tr>
+                        <td><strong>시스템/게임화</strong></td>
+                        <td>현실이 게임처럼 변화</td>
+                        <td>(현대적 변용)</td>
+                        <td>튜토리얼 탑의 고인물</td>
+                    </tr>
+                </table>
+            </section>
+
+            <!-- Part 2: 캐릭터 소개 -->
+            <section class="section fade-in" id="character-intro">
+                <h1>Part 2: 이야기의 심장 - 캐릭터</h1>
+                
+                <h2>캐릭터의 중요성</h2>
+                <div class="highlight">
+                    <p>독자는 사건 그 자체보다, 그 사건을 겪으며 고뇌하고 성장하는 '누군가'에게 감정 이입</p>
+                    <p>캐릭터 = 허구 세계와 현실 독자를 연결하는 매개체</p>
+                </div>
+
+                <h2>캐릭터 vs 플롯 논쟁의 종료</h2>
+                <h3>로버트 맥키의 관점</h3>
+                <ul>
+                    <li>캐릭터와 플롯은 근본적으로 하나</li>
+                    <li>진짜 성격은 '압력' 상황에서 어떤 '선택'을 하느냐로 드러남</li>
+                    <li>캐릭터에게 압력을 가하는 것이 플롯의 역할</li>
+                </ul>
+
+                <h3>사례: 오징어 게임의 기훈</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 20px 0;">
+                    <div style="background: #ecf0f1; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h4>초반</h4>
+                        <p>무능하고 책임감 없는 인물</p>
+                    </div>
+                    <div style="background: #e74c3c; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h4>극한 압력</h4>
+                        <p>목숨을 건 게임</p>
+                    </div>
+                    <div style="background: #27ae60; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h4>진짜 성격</h4>
+                        <p>약자 보호, 타인과의 연대 선택</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 행위자 모델 -->
+            <section class="section fade-in" id="actant-model">
+                <h1>그레마스의 행위자 모델</h1>
+                
+                <h2>행위자 모델의 목적</h2>
+                <ul>
+                    <li>캐릭터의 성격/심리가 아닌 '역할'과 '기능'에 집중</li>
+                    <li>복잡한 인물 관계를 6가지 역할과 3개 축으로 정리</li>
+                </ul>
+
+                <div class="actant-model">
+                    <div class="actant-box sender">발신자<br>(Sender)<br><small>임무 부여</small></div>
+                    <div class="actant-box object">대상<br>(Object)<br><small>궁극적 목표</small></div>
+                    <div class="actant-box receiver">수신자<br>(Receiver)<br><small>혜택을 보는 존재</small></div>
+                    <div class="actant-box helper">조력자<br>(Helper)<br><small>도움을 주는 존재</small></div>
+                    <div class="actant-box subject">주체<br>(Subject)<br><small>행동하는 주인공</small></div>
+                    <div class="actant-box opponent">적대자<br>(Opponent)<br><small>방해하는 존재</small></div>
+                </div>
+
+                <h2>3개 축의 의미</h2>
+                <ul>
+                    <li><strong>욕망의 축:</strong> 주체 ↔ 대상 (무엇을 원하는가?)</li>
+                    <li><strong>전달의 축:</strong> 발신자 → 수신자 (누가 명령하고 누가 혜택을 보는가?)</li>
+                    <li><strong>능력의 축:</strong> 조력자 vs 적대자 (누가 돕고 누가 방해하는가?)</li>
+                </ul>
+            </section>
+
+            <!-- 행위자 모델 적용 -->
+            <section class="section fade-in" id="actant-example">
+                <h1>행위자 모델 적용: 전지적 독자 시점</h1>
+                
+                <table class="table">
+                    <tr>
+                        <th>역할</th>
+                        <th>인물/요소</th>
+                        <th>설명</th>
+                    </tr>
+                    <tr>
+                        <td><strong>주체</strong></td>
+                        <td>김독자</td>
+                        <td>무언가를 간절히 원하고 행동하는 주인공</td>
+                    </tr>
+                    <tr>
+                        <td><strong>대상</strong></td>
+                        <td>이야기의 결말을 보는 것</td>
+                        <td>단순한 생존을 넘어선 궁극적 목표</td>
+                    </tr>
+                    <tr>
+                        <td><strong>조력자</strong></td>
+                        <td>유중혁, 동료들</td>
+                        <td>주체가 대상을 얻도록 돕는 존재</td>
+                    </tr>
+                    <tr>
+                        <td><strong>적대자</strong></td>
+                        <td>성좌들, 시나리오의 시련</td>
+                        <td>주체가 대상을 얻지 못하도록 방해</td>
+                    </tr>
+                    <tr>
+                        <td><strong>발신자</strong></td>
+                        <td>도깨비, 시스템</td>
+                        <td>임무를 부여하고 정당성을 부여</td>
+                    </tr>
+                    <tr>
+                        <td><strong>수신자</strong></td>
+                        <td>구원받을 세상</td>
+                        <td>주체의 성공으로 혜택을 보는 존재</td>
+                    </tr>
+                </table>
+
+                <div class="highlight">
+                    <p><strong>행위자 모델의 깊은 활용:</strong></p>
+                    <p>발신자-수신자 축 분석을 통해 이야기의 이데올로기와 권력 구조 파악 가능</p>
+                    <p>시스템물에서 '시스템'은 비인간적 요구를 정당화하는 발신자 역할</p>
+                </div>
+            </section>
+
+            <!-- 욕망의 삼각형 -->
+            <section class="section fade-in" id="desire-triangle">
+                <h1>르네 지라르의 욕망의 삼각형</h1>
+                
+                <h2>모방 욕망 이론</h2>
+                <div class="highlight">
+                    <p>인간의 욕망은 언제나 타인에 의해 매개된 모방 욕망</p>
+                    <p>직접 욕망하는 것이 아니라, 중개자를 모방하여 욕망하게 됨</p>
+                </div>
+
+                <div class="diagram">
+                    <div class="triangle">
+                        <div class="triangle-text top">중개자<br>(Mediator)</div>
+                        <div class="triangle-text left">주체<br>(Subject)</div>
+                        <div class="triangle-text right">대상<br>(Object)</div>
+                    </div>
+                    <p style="margin-top: 30px; font-style: italic;">주체는 중개자가 욕망하는 것을 보고 그 대상을 욕망하게 됨</p>
+                </div>
+
+                <h3>로맨스 웹툰에서의 적용</h3>
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; border-left: 5px solid #3498db;">
+                    <h4>상황 설정</h4>
+                    <ul>
+                        <li>여주인공이 인기 남자를 좋아하게 되는 과정</li>
+                        <li><strong>표면적:</strong> 외모나 성격에 반함</li>
+                        <li><strong>실제적:</strong> 그를 선망하는 다른 여학생들(중개자)을 통해 가치 인식</li>
+                        <li><strong>라이벌 등장 →</strong> 욕망 증폭 → 경쟁의 본질로 변화</li>
+                    </ul>
+                </div>
+
+                <h3>기생충에서의 욕망 구조</h3>
+                <p>기우가 다혜에게 호감을 느끼는 것은 단순히 다혜의 매력 때문이 아니라, 부유한 대학생 민혁(중개자)의 삶을 동경하고 모방하려는 욕망의 투사</p>
+            </section>
+
+            <!-- Part 3: 플롯 소개 -->
+            <section class="section fade-in" id="plot-intro">
+                <h1>Part 3: 이야기의 뼈대 - 플롯</h1>
+                
+                <h2>스토리 vs 플롯의 결정적 차이</h2>
+                
+                <h3>E.M. 포스터의 예시</h3>
+                <table class="table">
+                    <tr>
+                        <th>구분</th>
+                        <th>내용</th>
+                        <th>독자 반응</th>
+                    </tr>
+                    <tr>
+                        <td><strong>스토리</strong></td>
+                        <td>"왕이 죽었다. 그리고 왕비도 죽었다."</td>
+                        <td>"그래서 뭐? (So what?)"</td>
+                    </tr>
+                    <tr>
+                        <td><strong>플롯</strong></td>
+                        <td>"왕이 죽자, 그 슬픔을 이기지 못해 왕비도 죽었다."</td>
+                        <td>"왜? (Why?)" → 인과관계 추론</td>
+                    </tr>
+                </table>
+
+                <div class="highlight">
+                    <p><strong>플롯의 본질:</strong></p>
+                    <p>시간 순서대로 나열된 사건에 '인과관계'라는 접착제를 바른 것</p>
+                    <p>독자의 흥미 유발과 주제 전달을 위한 전략적 설계</p>
+                </div>
+
+                <h3>더 글로리의 플롯 전략</h3>
+                <div style="display: flex; justify-content: center; align-items: center; gap: 30px; margin: 30px 0;">
+                    <div style="background: #e74c3c; color: white; padding: 20px; border-radius: 15px; text-align: center;">
+                        <h4>일반적 순서</h4>
+                        <p>과거(학교폭력)<br>↓<br>현재(복수준비)</p>
+                    </div>
+                    <div style="font-size: 2em; color: #3498db;">VS</div>
+                    <div style="background: #27ae60; color: white; padding: 20px; border-radius: 15px; text-align: center;">
+                        <h4>실제 플롯</h4>
+                        <p>현재(복수준비)<br>↓<br>과거(학교폭력)</p>
+                        <small>"대체 무슨 일이?" 호기심 극대화</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 영웅의 여정 -->
+            <section class="section fade-in" id="hero-journey">
+                <h1>조지프 캠벨의 영웅의 여정</h1>
+                
+                <h2>영웅의 여정 개념</h2>
+                <ul>
+                    <li>전 세계 신화와 민담의 공통된 이야기 패턴</li>
+                    <li>크리스토퍼 보글러가 12단계로 정리</li>
+                    <li>주인공의 외부적 시련 + 내면적 성장 과정</li>
+                </ul>
+
+                <div class="hero-journey">
+                    <div class="journey-step">1. 일상세계<br><small>평범하고 결핍된 삶</small></div>
+                    <div class="journey-step">2. 모험 소명<br><small>일상을 깨는 사건</small></div>
+                    <div class="journey-step">3. 소명 거부<br><small>두려움으로 망설임</small></div>
+                    <div class="journey-step">4. 스승 만남<br><small>지혜와 도움 제공</small></div>
+                    <div class="journey-step">5. 첫 관문 통과<br><small>미지의 세계로</small></div>
+                    <div class="journey-step">6. 시험, 조력자, 적대자<br><small>다양한 시련과 만남</small></div>
+                    <div class="journey-step">7. 깊은 동굴 접근<br><small>가장 위험한 장소로</small></div>
+                    <div class="journey-step">8. 시련<br><small>절체절명의 위기</small></div>
+                    <div class="journey-step">9. 보상<br><small>원하던 것을 획득</small></div>
+                    <div class="journey-step">10. 귀환의 길<br><small>일상으로 돌아가려 함</small></div>
+                    <div class="journey-step">11. 부활<br><small>최종 시련, 완전한 변화</small></div>
+                    <div class="journey-step">12. 영약과 귀환<br><small>세상에 기여하며 복귀</small></div>
+                </div>
+
+                <h3>3막 구조</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 30px 0;">
+                    <div style="background: #3498db; color: white; padding: 20px; border-radius: 15px; text-align: center;">
+                        <h4>1막: 분리</h4>
+                        <p>1~5단계</p>
+                        <small>일상에서 모험으로</small>
+                    </div>
+                    <div style="background: #e74c3c; color: white; padding: 20px; border-radius: 15px; text-align: center;">
+                        <h4>2막: 입문</h4>
+                        <p>6~9단계</p>
+                        <small>시련과 성장</small>
+                    </div>
+                    <div style="background: #27ae60; color: white; padding: 20px; border-radius: 15px; text-align: center;">
+                        <h4>3막: 귀환</h4>
+                        <p>10~12단계</p>
+                        <small>변화된 모습으로 복귀</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 영웅의 여정 적용 -->
+            <section class="section fade-in" id="journey-example">
+                <h1>영웅의 여정 적용: 나 혼자만 레벨업</h1>
+                
+                <table class="table">
+                    <tr>
+                        <th>단계</th>
+                        <th>성진우의 여정</th>
+                        <th>의미</th>
+                    </tr>
+                    <tr>
+                        <td><strong>일상세계</strong></td>
+                        <td>최약체 E급 헌터의 삶</td>
+                        <td>결핍된 현실</td>
+                    </tr>
+                    <tr>
+                        <td><strong>모험 소명</strong></td>
+                        <td>이중 던전 발견</td>
+                        <td>운명적 사건</td>
+                    </tr>
+                    <tr>
+                        <td><strong>소명 거부</strong></td>
+                        <td>두려워하며 망설임</td>
+                        <td>자신의 한계 인정</td>
+                    </tr>
+                    <tr>
+                        <td><strong>스승 만남</strong></td>
+                        <td>던전의 석상들</td>
+                        <td>새로운 지식과 규칙 학습</td>
+                    </tr>
+                    <tr>
+                        <td><strong>시련</strong></td>
+                        <td>던전에서 죽음의 위기</td>
+                        <td>낡은 자아의 죽음</td>
+                    </tr>
+                    <tr>
+                        <td><strong>보상</strong></td>
+                        <td>플레이어로 각성</td>
+                        <td>새로운 능력 획득</td>
+                    </tr>
+                    <tr>
+                        <td><strong>영약과 귀환</strong></td>
+                        <td>인류를 구원하는 존재</td>
+                        <td>세상에 기여</td>
+                    </tr>
+                </table>
+
+                <div class="highlight">
+                    <p><strong>핵심 포인트:</strong></p>
+                    <p>물리적 레벨업(플롯) = 내면적 성장(캐릭터 변화)의 시각적 표현</p>
+                    <p>무력한 과거 자신을 버리고 최강자의 책임감을 받아들이는 과정</p>
+                </div>
+            </section>
+
+            <!-- 중심 플롯과 보조 플롯 -->
+            <section class="section fade-in" id="subplot">
+                <h1>중심 플롯과 보조 플롯의 직조술</h1>
+                
+                <h2>보조 플롯의 4가지 기능</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin: 30px 0;">
+                    <div style="background: #e74c3c; color: white; padding: 25px; border-radius: 15px;">
+                        <h3>1. 모순 (Contradiction)</h3>
+                        <p>중심 플롯과 정반대 가치로 아이러니 창출</p>
+                        <small>예: 주인공의 '희생' vs 조연의 '이기심'</small>
+                    </div>
+                    <div style="background: #3498db; color: white; padding: 25px; border-radius: 15px;">
+                        <h3>2. 되울림/공명 (Resonance)</h3>
+                        <p>중심 주제를 다른 상황에서 반복하여 강화</p>
+                        <small>예: 일타스캔들 - 어른들의 로맨스 + 10대들의 풋풋한 사랑</small>
+                    </div>
+                    <div style="background: #f39c12; color: white; padding: 25px; border-radius: 15px;">
+                        <h3>3. 지연 (Delay)</h3>
+                        <p>세계관 설명이나 이해 증진을 위한 선행 에피소드</p>
+                        <small>예: 시라노 연애조작단의 다른 의뢰 해결 과정</small>
+                    </div>
+                    <div style="background: #27ae60; color: white; padding: 25px; border-radius: 15px;">
+                        <h3>4. 복잡화/갈등 강화 (Complication)</h3>
+                        <p>무관해 보이던 사건들이 얽혀 긴장감 극대화</p>
+                        <small>예: 추리물에서 A사건과 B사건의 예상치 못한 연결</small>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <p><strong>유능한 작가의 직조술:</strong></p>
+                    <p>중심 플롯과 보조 플롯을 능수능란하게 직조하여 단선적 이야기를 입체적이고 다층적인 경험으로 전환</p>
+                </div>
+            </section>
+
+            <!-- 분석 체크리스트 -->
+            <section class="section fade-in" id="checklist">
+                <h1>영웅의 여정 분석 체크리스트</h1>
+                
+                <div class="highlight">
+                    <p><strong>사용법:</strong> 본인이 좋아하는 웹툰을 선택하여 각 단계에 해당하는 장면이나 사건을 찾아 기록</p>
+                </div>
+
+                <table class="table">
+                    <tr>
+                        <th>단계</th>
+                        <th>체크</th>
+                        <th>분석 질문</th>
+                        <th>웹툰 속 해당 장면/사건</th>
+                    </tr>
+                    <tr>
+                        <td><strong>일상세계</strong></td>
+                        <td>□</td>
+                        <td>주인공의 평범하고 결핍된 초기 모습은?</td>
+                        <td style="background: #f8f9fa; min-width: 200px;"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>모험 소명</strong></td>
+                        <td>□</td>
+                        <td>일상을 깨는 사건이나 제안은?</td>
+                        <td style="background: #f8f9fa;"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>소명 거부</strong></td>
+                        <td>□</td>
+                        <td>모험을 망설이거나 거부했는가?</td>
+                        <td style="background: #f8f9fa;"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>스승 만남</strong></td>
+                        <td>□</td>
+                        <td>결정적 도움이나 가르침을 준 인물은?</td>
+                        <td style="background: #f8f9fa;"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>첫 관문 통과</strong></td>
+                        <td>□</td>
+                        <td>돌이킬 수 없는 선택을 하고 모험에 뛰어든 순간은?</td>
+                        <td style="background: #f8f9fa;"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>시험, 조력자, 적대자</strong></td>
+                        <td>□</td>
+                        <td>모험 속에서 만난 동료, 방해자, 겪은 시련들은?</td>
+                        <td style="background: #f8f9fa;"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>깊은 동굴 접근</strong></td>
+                        <td>□</td>
+                        <td>최종 결전 직전, 가장 위험한 곳으로 향하는 장면은?</td>
+                        <td style="background: #f8f9fa;"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>시련</strong></td>
+                        <td>□</td>
+                        <td>죽을 뻔하거나 모든 것을 잃는 절체절명의 위기는?</td>
+                        <td style="background: #f8f9fa;"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>보상</strong></td>
+                        <td>□</td>
+                        <td>시련을 극복하고 얻은 능력, 물건, 깨달음은?</td>
+                        <td style="background: #f8f9fa;"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>귀환의 길</strong></td>
+                        <td>□</td>
+                        <td>모든 것을 끝내고 원래 세계로 돌아가려는 과정에서 생긴 갈등은?</td>
+                        <td style="background: #f8f9fa;"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>부활</strong></td>
+                        <td>□</td>
+                        <td>마지막 시련을 통해 내면적으로 완전히 변했음을 증명하는 사건은?</td>
+                        <td style="background: #f8f9fa;"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>영약과 귀환</strong></td>
+                        <td>□</td>
+                        <td>주인공이 모험의 결과물로 자신과 세상을 어떻게 변화시켰는가?</td>
+                        <td style="background: #f8f9fa;"></td>
+                    </tr>
+                </table>
+            </section>
+
+            <!-- 종합 정리 -->
+            <section class="section fade-in" id="conclusion">
+                <h1>종합 정리: 3가지 렌즈의 유기적 결합</h1>
+                
+                <div class="venn-diagram">
+                    <div class="venn-circle">모티프<br><small>이야기의 DNA</small></div>
+                    <div class="venn-circle">캐릭터<br><small>이야기의 심장</small></div>
+                    <div class="venn-circle">플롯<br><small>이야기의 뼈대</small></div>
+                </div>
+
+                <h2>각 요소의 역할</h2>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin: 30px 0;">
+                    <div style="background: #3498db; color: white; padding: 25px; border-radius: 15px; text-align: center;">
+                        <h3>모티프</h3>
+                        <p><strong>'무엇을'</strong> 이야기할 것인가</p>
+                        <small>(아이디어)</small>
+                        <ul style="text-align: left; margin-top: 15px;">
+                            <li>시대 초월적 공감대</li>
+                            <li>검증된 재미 보장</li>
+                            <li>독자의 기대 설정</li>
+                        </ul>
+                    </div>
+                    <div style="background: #e74c3c; color: white; padding: 25px; border-radius: 15px; text-align: center;">
+                        <h3>캐릭터</h3>
+                        <p><strong>'누가'</strong> 이야기를 이끌어갈 것인가</p>
+                        <small>(생명력)</small>
+                        <ul style="text-align: left; margin-top: 15px;">
+                            <li>독자와의 감정적 연결</li>
+                            <li>이야기 세계 진입 통로</li>
+                            <li>압력 상황에서 선택</li>
+                        </ul>
+                    </div>
+                    <div style="background: #27ae60; color: white; padding: 25px; border-radius: 15px; text-align: center;">
+                        <h3>플롯</h3>
+                        <p><strong>'어떻게'</strong> 극적으로 전달할 것인가</p>
+                        <small>(구조)</small>
+                        <ul style="text-align: left; margin-top: 15px;">
+                            <li>사건의 인과관계</li>
+                            <li>시간 재구성 전략</li>
+                            <li>긴장감과 의미 창출</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <p><strong>최종 목표 달성:</strong></p>
+                    <p>수동적 독자 → 능동적 서사 분석가로 전환</p>
+                    <p>웹툰의 구조적 완성도와 IP 가치를 평가할 수 있는 전문가 역량 구축</p>
+                    <p>이야기의 깊이와 창작자의 천재성에 대한 새로운 차원의 감탄과 즐거움 발견</p>
+                </div>
+
+                <h2>분석적 시각의 가치</h2>
+                <ul>
+                    <li>웹툰 감상 경험을 방해하지 않고 오히려 풍부하게 만듦</li>
+                    <li>작가의 치밀한 계산과 고민을 발견하는 즐거움</li>
+                    <li>작품의 깊이에 대한 새로운 차원의 이해</li>
+                    <li>IP 확장 가능성과 상업적 잠재력 평가 역량</li>
+                </ul>
+            </section>
+
+            <!-- 실습 과제 -->
+            <section class="section fade-in" id="practice">
+                <h1>실습 과제 및 다음 단계</h1>
+                
+                <h2>개인 실습 과제</h2>
+                <div style="background: #f8f9fa; padding: 30px; border-radius: 15px; margin: 20px 0;">
+                    <h3>1단계: 작품 선택</h3>
+                    <p>본인이 좋아하는 웹툰 1편을 선택 (완결작 권장)</p>
+                    
+                    <h3>2단계: 3가지 렌즈로 종합 분석</h3>
+                    <ul>
+                        <li><strong>모티프 분석:</strong> 핵심 모티프 3개 추출 및 태그 분류</li>
+                        <li><strong>캐릭터 분석:</strong> 행위자 모델로 인물 관계도 작성</li>
+                        <li><strong>플롯 분석:</strong> 영웅의 여정 체크리스트 완성</li>
+                    </ul>
+                    
+                    <h3>3단계: IP 가치 평가</h3>
+                    <p>해당 작품의 IP 확장 가능성 및 상업적 잠재력 분석</p>
+                </div>
+
+                <h2>그룹 토론 주제</h2>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 30px 0;">
+                    <div style="background: #3498db; color: white; padding: 20px; border-radius: 15px;">
+                        <h4>성공 요인 분석</h4>
+                        <p>성공한 웹툰 IP의 공통적 서사 구조 탐구</p>
+                    </div>
+                    <div style="background: #e74c3c; color: white; padding: 20px; border-radius: 15px;">
+                        <h4>장르별 특성</h4>
+                        <p>장르별 모티프 선호도 및 트렌드 분석</p>
+                    </div>
+                    <div style="background: #27ae60; color: white; padding: 20px; border-radius: 15px;">
+                        <h4>글로벌 진출</h4>
+                        <p>해외 진출 성공 작품의 서사적 특징 연구</p>
+                    </div>
+                    <div style="background: #f39c12; color: white; padding: 20px; border-radius: 15px;">
+                        <h4>미래 전망</h4>
+                        <p>차세대 웹툰 트렌드 예측 및 대응 전략</p>
+                    </div>
+                </div>
+
+                <h2>다음 강의 예고</h2>
+                <div class="highlight">
+                    <h3>웹툰 IP의 미디어 확장 전략</h3>
+                    <ul>
+                        <li>웹툰에서 웹드라마로의 각색 전략</li>
+                        <li>IP 확장 과정에서의 서사 변용</li>
+                        <li>글로벌 시장을 위한 서사 구조 최적화</li>
+                        <li>플랫폼별 서사 적응 전략</li>
+                    </ul>
+                </div>
+
+                <h2>추천 참고 자료</h2>
+                <ul>
+                    <li>로버트 맥키, 『스토리』</li>
+                    <li>조지프 캠벨, 『천의 얼굴을 가진 영웅』</li>
+                    <li>크리스토퍼 보글러, 『작가를 위한 영웅의 여정』</li>
+                    <li>웹툰 플랫폼별 인기 작품 트렌드 분석 리포트</li>
+                </ul>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // 메뉴 토글 기능
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('hidden');
+            mainContent.classList.toggle('expanded');
+        });
+
+        // 메뉴 아이템 클릭 시 활성화
+        const menuItems = document.querySelectorAll('.menu-item');
+        const sections = document.querySelectorAll('.section');
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // 모든 메뉴 아이템에서 active 클래스 제거
+                menuItems.forEach(menu => menu.classList.remove('active'));
+                // 클릭된 아이템에 active 클래스 추가
+                this.classList.add('active');
+                
+                // 해당 섹션으로 스크롤
+                const targetId = this.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                
+                if (targetSection) {
+                    targetSection.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // 스크롤 진행률 표시
+        const progressFill = document.getElementById('progressFill');
+        
+        window.addEventListener('scroll', function() {
+            const scrollTop = document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollProgress = (scrollTop / scrollHeight) * 100;
+            
+            progressFill.style.width = scrollProgress + '%';
+        });
+
+        // 스크롤 애니메이션
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // 모든 섹션을 관찰
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        // 현재 보이는 섹션에 따라 메뉴 활성화
+        const sectionObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const sectionId = entry.target.id;
+                    menuItems.forEach(item => {
+                        item.classList.remove('active');
+                        if (item.getAttribute('href') === '#' + sectionId) {
+                            item.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, {
+            threshold: 0.3
+        });
+
+        sections.forEach(section => {
+            sectionObserver.observe(section);
+        });
+
+        // 반응형 처리
+        window.addEventListener('resize', function() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('hidden');
+                mainContent.classList.add('expanded');
+            }
+        });
+
+        // 초기 로드 시 첫 번째 섹션 활성화
+        if (sections.length > 0) {
+            sections[0].classList.add('visible');
+        }
+    </script>
+</body>
+</html>
