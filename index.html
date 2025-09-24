@@ -218,44 +218,50 @@
             border-right: 100px solid transparent;
             border-bottom: 150px solid #3498db;
             position: relative;
-            margin: 30px auto;
+            margin: 40px auto;
         }
 
         .triangle-text {
             position: absolute;
-            color: white;
+            color: #2c3e50;
             font-weight: bold;
             text-align: center;
+            width: auto;
         }
 
         .triangle-text.top {
-            top: 120px;
-            left: -50px;
-            width: 100px;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .triangle-text.left {
-            top: 160px;
-            left: -120px;
-            width: 80px;
+            top: 155px;
+            left: -85px;
         }
 
         .triangle-text.right {
-            top: 160px;
-            left: 40px;
-            width: 80px;
+            top: 155px;
+            right: -85px;
         }
 
         .actant-model {
             display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            grid-template-rows: 1fr 2fr 1fr;
-            gap: 25px;
-            max-width: 700px;
+            grid-template-columns: 1fr auto 1fr auto 1fr;
+            grid-template-rows: auto auto;
+            gap: 15px 10px;
+            max-width: 800px;
             margin: 30px auto;
             text-align: center;
+            align-items: center;
         }
 
+        .arrow {
+            font-size: 2em;
+            color: #34495e;
+            font-weight: bold;
+        }
+        
         .actant-box {
             background: #ecf0f1;
             border: 2px solid #bdc3c7;
@@ -263,6 +269,10 @@
             padding: 20px;
             font-weight: bold;
             transition: transform 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .actant-box:hover {
@@ -270,12 +280,12 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
-        .actant-box.sender { grid-area: 1 / 1 / 2 / 2; background: #e8f5e8; }
-        .actant-box.object { grid-area: 1 / 2 / 2 / 3; background: #fff2cc; }
-        .actant-box.receiver { grid-area: 1 / 3 / 2 / 4; background: #e8f5e8; }
-        .actant-box.helper { grid-area: 2 / 1 / 3 / 2; background: #e1f5fe; }
-        .actant-box.subject { grid-area: 2 / 2 / 3 / 3; background: #ffebee; }
-        .actant-box.opponent { grid-area: 2 / 3 / 3 / 4; background: #fce4ec; }
+        .actant-box.sender { background: #e8f5e8; }
+        .actant-box.object { background: #fff2cc; }
+        .actant-box.receiver { background: #e8f5e8; }
+        .actant-box.helper { background: #e1f5fe; }
+        .actant-box.subject { background: #ffebee; }
+        .actant-box.opponent { background: #fce4ec; }
 
         .hero-journey {
             display: grid;
@@ -348,7 +358,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 40px 0;
+            margin: 60px 0;
+            height: 160px;
         }
 
         .venn-circle {
@@ -361,12 +372,14 @@
             font-weight: bold;
             color: white;
             position: relative;
-            margin: -20px;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .venn-circle:nth-child(1) { background: rgba(52, 152, 219, 0.8); z-index: 3; }
-        .venn-circle:nth-child(2) { background: rgba(231, 76, 60, 0.8); z-index: 2; }
-        .venn-circle:nth-child(3) { background: rgba(46, 204, 113, 0.8); z-index: 1; }
+        .venn-circle:nth-child(2) { background: rgba(231, 76, 60, 0.8); z-index: 2; margin-left: -60px; }
+        .venn-circle:nth-child(3) { background: rgba(46, 204, 113, 0.8); z-index: 1; margin-left: -60px; }
 
         /* 반응형 */
         @media (max-width: 768px) {
@@ -385,9 +398,12 @@
 
             .actant-model {
                 grid-template-columns: 1fr;
-                grid-template-rows: repeat(6, 1fr);
+                grid-template-rows: auto;
             }
-
+            .arrow {
+                transform: rotate(90deg);
+                margin: -10px 0;
+            }
             .actant-box {
                 grid-area: auto !important;
             }
@@ -688,10 +704,15 @@
 
                 <div class="actant-model">
                     <div class="actant-box sender">발신자<br>(Sender)<br><small>임무 부여</small></div>
+                    <div class="arrow">→</div>
                     <div class="actant-box object">대상<br>(Object)<br><small>궁극적 목표</small></div>
+                    <div class="arrow">→</div>
                     <div class="actant-box receiver">수신자<br>(Receiver)<br><small>혜택을 보는 존재</small></div>
+                    
                     <div class="actant-box helper">조력자<br>(Helper)<br><small>도움을 주는 존재</small></div>
+                    <div class="arrow">→</div>
                     <div class="actant-box subject">주체<br>(Subject)<br><small>행동하는 주인공</small></div>
+                    <div class="arrow">←</div>
                     <div class="actant-box opponent">적대자<br>(Opponent)<br><small>방해하는 존재</small></div>
                 </div>
 
@@ -934,22 +955,22 @@
                 
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin: 30px 0;">
                     <div style="background: #e74c3c; color: white; padding: 25px; border-radius: 15px;">
-                        <h3>1. 모순 (Contradiction)</h3>
+                        <h3 style="color: white;">1. 모순 (Contradiction)</h3>
                         <p>중심 플롯과 정반대 가치로 아이러니 창출</p>
                         <small>예: 주인공의 '희생' vs 조연의 '이기심'</small>
                     </div>
                     <div style="background: #3498db; color: white; padding: 25px; border-radius: 15px;">
-                        <h3>2. 되울림/공명 (Resonance)</h3>
+                        <h3 style="color: white;">2. 되울림/공명 (Resonance)</h3>
                         <p>중심 주제를 다른 상황에서 반복하여 강화</p>
                         <small>예: 일타스캔들 - 어른들의 로맨스 + 10대들의 풋풋한 사랑</small>
                     </div>
                     <div style="background: #f39c12; color: white; padding: 25px; border-radius: 15px;">
-                        <h3>3. 지연 (Delay)</h3>
+                        <h3 style="color: white;">3. 지연 (Delay)</h3>
                         <p>세계관 설명이나 이해 증진을 위한 선행 에피소드</p>
                         <small>예: 시라노 연애조작단의 다른 의뢰 해결 과정</small>
                     </div>
                     <div style="background: #27ae60; color: white; padding: 25px; border-radius: 15px;">
-                        <h3>4. 복잡화/갈등 강화 (Complication)</h3>
+                        <h3 style="color: white;">4. 복잡화/갈등 강화 (Complication)</h3>
                         <p>무관해 보이던 사건들이 얽혀 긴장감 극대화</p>
                         <small>예: 추리물에서 A사건과 B사건의 예상치 못한 연결</small>
                     </div>
@@ -1062,7 +1083,7 @@
                 <h2>각 요소의 역할</h2>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin: 30px 0;">
                     <div style="background: #3498db; color: white; padding: 25px; border-radius: 15px; text-align: center;">
-                        <h3>모티프</h3>
+                        <h3 style="color: white;">모티프</h3>
                         <p><strong>'무엇을'</strong> 이야기할 것인가</p>
                         <small>(아이디어)</small>
                         <ul style="text-align: left; margin-top: 15px;">
@@ -1072,7 +1093,7 @@
                         </ul>
                     </div>
                     <div style="background: #e74c3c; color: white; padding: 25px; border-radius: 15px; text-align: center;">
-                        <h3>캐릭터</h3>
+                        <h3 style="color: white;">캐릭터</h3>
                         <p><strong>'누가'</strong> 이야기를 이끌어갈 것인가</p>
                         <small>(생명력)</small>
                         <ul style="text-align: left; margin-top: 15px;">
@@ -1082,7 +1103,7 @@
                         </ul>
                     </div>
                     <div style="background: #27ae60; color: white; padding: 25px; border-radius: 15px; text-align: center;">
-                        <h3>플롯</h3>
+                        <h3 style="color: white;">플롯</h3>
                         <p><strong>'어떻게'</strong> 극적으로 전달할 것인가</p>
                         <small>(구조)</small>
                         <ul style="text-align: left; margin-top: 15px;">
@@ -1147,25 +1168,6 @@
                         <p>차세대 웹툰 트렌드 예측 및 대응 전략</p>
                     </div>
                 </div>
-
-                <h2>다음 강의 예고</h2>
-                <div class="highlight">
-                    <h3>웹툰 IP의 미디어 확장 전략</h3>
-                    <ul>
-                        <li>웹툰에서 웹드라마로의 각색 전략</li>
-                        <li>IP 확장 과정에서의 서사 변용</li>
-                        <li>글로벌 시장을 위한 서사 구조 최적화</li>
-                        <li>플랫폼별 서사 적응 전략</li>
-                    </ul>
-                </div>
-
-                <h2>추천 참고 자료</h2>
-                <ul>
-                    <li>로버트 맥키, 『스토리』</li>
-                    <li>조지프 캠벨, 『천의 얼굴을 가진 영웅』</li>
-                    <li>크리스토퍼 보글러, 『작가를 위한 영웅의 여정』</li>
-                    <li>웹툰 플랫폼별 인기 작품 트렌드 분석 리포트</li>
-                </ul>
             </section>
         </div>
     </div>
